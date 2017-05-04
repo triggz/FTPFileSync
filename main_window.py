@@ -132,7 +132,7 @@ class Ui_Window(object):
         self.gridLayout_3 = QtWidgets.QGridLayout(self.tab_transfer_queue)
         self.gridLayout_3.setContentsMargins(0, 0, 0, 0)
         self.gridLayout_3.setObjectName("gridLayout_3")
-        self.list_transfer = QtWidgets.QListView(self.tab_transfer_queue)
+        self.list_transfer = QtWidgets.QListWidget(self.tab_transfer_queue)
         font = QtGui.QFont()
         font.setFamily("Corbel")
         font.setPointSize(8)
