@@ -9,6 +9,7 @@ from main_window import Ui_Window
 
 
 class Search_Thread(Thread):
+
     def __init__(self, hostname, username, password):
         super().__init__()
         self.hostname = hostname
@@ -123,18 +124,9 @@ class MainForm(QMainWindow, Ui_Window):
     def add_folder_click(self):
 
         text, ok = QInputDialog.getText(self, 'Remote Folder', 'Enter the name of a remote folder to add:')
-
         if ok:
-
-            try:
-                with FTPHost(self.input_hostname.text(), self.input_username.text(), self.input_password.text()) as ftp:
-                    if ftp.path.exists(text) is True:
-                        self.remote_folders.append(text)
-                        log.info('Added {} to the list of remote folders to search.'.format(text))
-                    else:
-                        log.warning('{} does not exist on {}'.format(text, self.input_hostname.text()))
-            except Exception as e:
-                log.debug(e)
+            self.remote_folders.append(text)
+            log.info('Added {} to the list of remote folders to search.'.format(text))
 
     def sync_click(self):
         new_thread = Download_Thread(self.input_hostname.text(), self.input_username.text(), self.input_password.text(),
