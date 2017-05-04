@@ -2,6 +2,7 @@ import logging
 import sys
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
+from ftputil import FTPHost
 
 from main_window import Ui_Window
 
@@ -36,11 +37,10 @@ class MainForm(QMainWindow, Ui_Window):
         self.action_find_remote_folders.triggered.connect(self.find_folders_click)
         self.action_sync.triggered.connect(self.sync_click)
 
-
     def download_path_click(self):
 
-        self.path = QFileDialog.getExistingDirectory()
-        log.debug('Download path set: {}'.format(self.path))
+        self.local_path = QFileDialog.getExistingDirectory()
+        log.debug('Download path set: {}'.format(self.local_path))
 
     def load_settings_click(self):
         log.debug('Getting path from user....')
@@ -71,12 +71,17 @@ class MainForm(QMainWindow, Ui_Window):
         except Exception as e:
             log.exception(e)
 
-
-
-
-
     def find_folders_click(self):
-        pass
+
+        log.debug('Attempting to retrieve root folder list from {}'.format(self.input_hostname.text()))
+
+        try:
+            with FTPHost(self.input_hostname.text(), self.input_username.text(), self.input_password.text()) as ftp:
+                for folder in ftp.listdir('.'):
+                    log.info('Found remote folder - {}'.format(folder))
+        except Exception as e:
+            log.exception(e)
+
 
     def sync_click(self):
         pass
