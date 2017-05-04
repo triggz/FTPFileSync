@@ -1,7 +1,9 @@
-import sys
 import logging
-from main_window import Ui_Window
+import sys
+
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
+
+from main_window import Ui_Window
 
 
 class List_Handler(logging.Handler):
@@ -10,7 +12,6 @@ class List_Handler(logging.Handler):
         log_entry = self.format(record)
         form.list_log.addItem(log_entry)
         form.list_log.scrollToBottom()
-
 
 
 class MainForm(QMainWindow, Ui_Window):
@@ -36,8 +37,6 @@ class MainForm(QMainWindow, Ui_Window):
         self.action_sync.triggered.connect(self.sync_click)
 
 
-
-
     def download_path_click(self):
 
         self.path = QFileDialog.getExistingDirectory()
@@ -47,7 +46,22 @@ class MainForm(QMainWindow, Ui_Window):
         log.debug('Loaded Settings')
 
     def save_settings_click(self):
-        pass
+        log.debug('Getting path from user....')
+        path = QFileDialog.getSaveFileName(filter=('FTP Config File (*.ftc)'))
+        log.debug('Attempting to save settings file')
+
+        try:
+            with open(path[0], 'w') as file_handler:
+                file_handler.write(self.input_hostname.text() + '\n')
+                file_handler.write(self.input_username.text() + '\n')
+                file_handler.write(self.input_password.text() + '\n')
+                log.debug('Saved settings to {}'.format(path[0]))
+        except Exception as e:
+            log.exception(e)
+
+
+
+
 
     def find_folders_click(self):
         pass
@@ -72,8 +86,6 @@ if __name__ == '__main__':
     log_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s','%c')
     console_handler.setFormatter(log_formatter)
     log.addHandler(console_handler)
-
-    log.debug('log started')
 
     # Start the Aplication
     app = QApplication(sys.argv)

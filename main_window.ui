@@ -6,19 +6,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>585</width>
+       <width>730</width>
     <height>630</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>585</width>
+       <width>730</width>
     <height>630</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>585</width>
+       <width>730</width>
     <height>630</height>
    </size>
   </property>
@@ -31,6 +31,11 @@
   <property name="windowTitle">
    <string>FTP File Sync</string>
   </property>
+     <property name="windowIcon">
+         <iconset>
+             <normaloff>Icons/Download From FTP.png</normaloff>Icons/Download From FTP.png
+         </iconset>
+     </property>
   <property name="styleSheet">
    <string notr="true">QMainWindow {
 background-color: rgb(255, 255, 255);
@@ -323,6 +328,8 @@ background-color: rgb(255, 255, 255);
    <addaction name="action_save_settings"/>
    <addaction name="separator"/>
    <addaction name="action_find_remote_folders"/>
+      <addaction name="action_add_folder"/>
+      <addaction name="separator"/>
    <addaction name="action_sync"/>
    <addaction name="separator"/>
   </widget>
@@ -379,6 +386,16 @@ background-color: rgb(255, 255, 255);
     <string>Download path</string>
    </property>
   </action>
+     <action name="action_add_folder">
+         <property name="icon">
+             <iconset>
+                 <normaloff>Icons/Add Folder.png</normaloff>Icons/Add Folder.png
+             </iconset>
+         </property>
+         <property name="text">
+             <string>Add Remote Folder</string>
+         </property>
+     </action>
  </widget>
  <resources/>
  <connections/>
