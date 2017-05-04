@@ -43,7 +43,19 @@ class MainForm(QMainWindow, Ui_Window):
         log.debug('Download path set: {}'.format(self.path))
 
     def load_settings_click(self):
-        log.debug('Loaded Settings')
+        log.debug('Getting path from user....')
+        path = QFileDialog.getOpenFileName(filter=('FTP Config File (*.ftc)'))
+        log.debug('Attempting to load the settings file')
+
+        try:
+            with open(path[0], 'r') as file_handler:
+                self.input_hostname.setText(file_handler.readline().rstrip('\n'))
+                self.input_username.setText(file_handler.readline().rstrip('\n'))
+                self.input_password.setText(file_handler.readline().rstrip('\n'))
+                log.debug('Loaded settings from {}'.format(path[0]))
+
+        except Exception as e:
+            log.exception(e)
 
     def save_settings_click(self):
         log.debug('Getting path from user....')
