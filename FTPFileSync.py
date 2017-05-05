@@ -1,5 +1,8 @@
 import logging
+import os
 import sys
+from ftplib import FTP as ftp2
+from pathlib import Path
 from threading import Thread
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QInputDialog
@@ -27,13 +30,17 @@ class Search_Thread(Thread):
 
 
 class Download_Thread(Thread):
-    def __init__(self, hostname, username, password, list_of_folders):
+    def __init__(self, hostname, username, password, list_of_folders, download_path):
         super().__init__()
         self.hostname = hostname
         self.username = username
         self.password = password
         self.list_of_folders = list_of_folders
         self.list_of_files = []
+        self.download_path = download_path
+
+    def callback(self, chunk):
+        pass
 
     def run(self):
         if form.stop_sync is not True:
@@ -47,6 +54,43 @@ class Download_Thread(Thread):
                                 form.list_transfer.addItem(root + '/' + file)
                 except Exception as e:
                     log.exception(e)
+
+        for i in range(0, form.list_transfer.count()):
+            remote_file = Path(form.list_transfer.takeItem(0).text())
+            local_file = Path(self.download_path + '/' + str(remote_file))
+
+            # create folder for file
+            try:
+                os.chdir(self.download_path)
+                os.makedirs(str(local_file.parent))
+                log.info('Created local folder: {}'.format(str(local_file.parent)))
+            except FileExistsError as e:
+                log.warning('{} already exists, skipping..'.format(str(local_file.parent)))
+
+            # enter the local folder
+            try:
+                os.chdir(str(local_file.parent))
+            except Exception as e:
+                log.exception(e)
+
+            # enter the remote folder
+
+            log.info('Attempting to download: {}'.format(str(local_file.parts[-1])))
+
+            try:
+                with ftp2(self.hostname, self.username, self.password) as ftp:
+                    for i in remote_file.parts[0: -1]:
+                        ftp.cwd(str(i))
+                    fh = open(str(local_file), 'wb')
+                    ftp.retrbinary('RETR {}'.format(str(remote_file.parts[-1])), fh.write)
+                    fh.close()
+
+
+            except Exception as e:
+                log.exception(e)
+
+
+
 
 
 class List_Handler(logging.Handler):
@@ -130,7 +174,7 @@ class MainForm(QMainWindow, Ui_Window):
 
     def sync_click(self):
         new_thread = Download_Thread(self.input_hostname.text(), self.input_username.text(), self.input_password.text(),
-                                     self.remote_folders)
+                                     self.remote_folders, self.local_path)
         new_thread.start()
 
 
