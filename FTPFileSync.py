@@ -10,6 +10,21 @@ from ftputil import FTPHost
 
 from main_window import Ui_Window
 
+class Progress_Thread(Thread):
+
+    def __init__(self, minimum = 0, maximum = 0, value = 0):
+        super().__init__()
+        self.minimum = minimum
+        self.maximum = maximum
+        self.value = value
+
+
+    def run(self):
+        form.bar_progress.setMinimum(self.minimum)
+        form.bar_progress.setMaximum(self.maximum)
+        form.bar_progress.setValue(self.value)
+
+
 
 class Search_Thread(Thread):
 
@@ -85,12 +100,13 @@ class Download_Thread(Thread):
                     ftp.retrbinary('RETR {}'.format(str(remote_file.parts[-1])), fh.write)
                     fh.close()
 
+                    log.info('Download Complete: {}'.format(str(local_file)))
+
+                    form.list_finished_transfer.addItem(str(local_file))
+
 
             except Exception as e:
                 log.exception(e)
-
-
-
 
 
 class List_Handler(logging.Handler):
@@ -107,11 +123,11 @@ class MainForm(QMainWindow, Ui_Window):
         super().__init__()
         self.setupUi(self)
 
-
         # Set initial vars
         self.local_path = ''
         self.remote_folders = []
         self.stop_sync = False
+        self.action_stop_sync.setEnabled(False)
 
         # Set custom logging handler
         self.list_handler = List_Handler()
@@ -125,11 +141,19 @@ class MainForm(QMainWindow, Ui_Window):
         self.action_find_remote_folders.triggered.connect(self.find_folders_click)
         self.action_add_folder.triggered.connect(self.add_folder_click)
         self.action_sync.triggered.connect(self.sync_click)
+        self.action_stop_sync.triggered.connect(self.sync_stop_click)
+
 
     def download_path_click(self):
 
         self.local_path = QFileDialog.getExistingDirectory()
-        log.debug('Download path set: {}'.format(self.local_path))
+        if self.local_path == '':
+            log.warning('Download path is empty!')
+        else:
+            log.info('Download path: {}'.format(self.local_path))
+
+
+
 
     def load_settings_click(self):
         log.debug('Getting path from user....')
@@ -173,11 +197,31 @@ class MainForm(QMainWindow, Ui_Window):
             log.info('Added {} to the list of remote folders to search.'.format(text))
 
     def sync_click(self):
+        self.action_add_folder.setEnabled(False)
+        self.action_download_path.setEnabled(False)
+        self.action_load_settings.setEnabled(False)
+        self.action_save_settings.setEnabled(False)
+        self.action_find_remote_folders.setEnabled(False)
+        self.action_sync.setEnabled(False)
+        self.action_stop_sync.setEnabled(True)
+        self.input_hostname.setEnabled(False)
+        self.input_username.setEnabled(False)
+        self.input_password.setEnabled(False)
+
+        busy_progress = Progress_Thread()
+        busy_progress.start()
+
+
+
+
         new_thread = Download_Thread(self.input_hostname.text(), self.input_username.text(), self.input_password.text(),
                                      self.remote_folders, self.local_path)
         new_thread.start()
 
+    def sync_stop_click(self):
 
+        self.stop_sync = True
+        log.info('Stopping sync at the next safe opurtunity.....')
 
 if __name__ == '__main__':
 
