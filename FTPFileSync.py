@@ -71,42 +71,59 @@ class Download_Thread(Thread):
                     log.exception(e)
 
         for i in range(0, form.list_transfer.count()):
-            remote_file = Path(form.list_transfer.takeItem(0).text())
-            local_file = Path(self.download_path + '/' + str(remote_file))
 
-            # create folder for file
-            try:
-                os.chdir(self.download_path)
-                os.makedirs(str(local_file.parent))
-                log.info('Created local folder: {}'.format(str(local_file.parent)))
-            except FileExistsError as e:
-                log.warning('{} already exists, skipping..'.format(str(local_file.parent)))
+            if form.stop_sync is not True:
 
-            # enter the local folder
-            try:
-                os.chdir(str(local_file.parent))
-            except Exception as e:
-                log.exception(e)
+                remote_file = Path(form.list_transfer.takeItem(0).text())
+                local_file = Path(self.download_path + '/' + str(remote_file))
 
-            # enter the remote folder
+                # create folder for file
+                try:
+                    os.chdir(self.download_path)
+                    os.makedirs(str(local_file.parent))
+                    log.info('Created local folder: {}'.format(str(local_file.parent)))
+                except FileExistsError as e:
+                    log.warning('{} already exists, skipping..'.format(str(local_file.parent)))
 
-            log.info('Attempting to download: {}'.format(str(local_file.parts[-1])))
+                # enter the local folder
+                try:
+                    os.chdir(str(local_file.parent))
+                except Exception as e:
+                    log.exception(e)
 
-            try:
-                with ftp2(self.hostname, self.username, self.password) as ftp:
-                    for i in remote_file.parts[0: -1]:
-                        ftp.cwd(str(i))
-                    fh = open(str(local_file), 'wb')
-                    ftp.retrbinary('RETR {}'.format(str(remote_file.parts[-1])), fh.write)
-                    fh.close()
+                # enter the remote folder
 
-                    log.info('Download Complete: {}'.format(str(local_file)))
+                log.info('Attempting to download: {}'.format(str(local_file.parts[-1])))
 
-                    form.list_finished_transfer.addItem(str(local_file))
+                try:
+                    with ftp2(self.hostname, self.username, self.password) as ftp:
+                        for i in remote_file.parts[0: -1]:
+                            ftp.cwd(str(i))
+                        fh = open(str(local_file), 'wb')
+                        ftp.retrbinary('RETR {}'.format(str(remote_file.parts[-1])), fh.write)
+                        fh.close()
+
+                        log.info('Download Complete: {}'.format(str(local_file)))
+
+                        form.list_finished_transfer.addItem(str(local_file))
+                except Exception as e:
+                    log.exception(e)
+
+            else:
+                form.list_transfer.clear()
+                form.action_add_folder.setEnabled(True)
+                form.action_download_path.setEnabled(True)
+                form.action_load_settings.setEnabled(True)
+                form.action_save_settings.setEnabled(True)
+                form.action_find_remote_folders.setEnabled(True)
+                form.action_sync.setEnabled(True)
+                form.action_stop_sync.setEnabled(False)
+                form.input_hostname.setEnabled(True)
+                form.input_username.setEnabled(True)
+                form.input_password.setEnabled(True)
 
 
-            except Exception as e:
-                log.exception(e)
+
 
 
 class List_Handler(logging.Handler):
